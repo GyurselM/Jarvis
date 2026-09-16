@@ -1,4 +1,18 @@
+# Entorno virtual
 venv/
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+.pytest_cache/
+
+# Variable de entorno (claves API, contraseñas, etc.)
 .env
+
+# Editor
+.vscode/
+
+# Sistema
+.DS_Store
+Thumbs.db
