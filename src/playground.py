@@ -4,10 +4,14 @@ funcionan de verdad en tu sistema. No forma parte de la lógica
 del asistente ni se importa desde ningún otro sitio.
 """
 
-from actions.open_app import OpenAppAction
-from core.command import Command
+from brain.router import Router
+from integrations.llm_client import GeminiClient
 
 if __name__ == "__main__":
-    action = OpenAppAction()
-    result = action.execute(Command("open_app", {"app_name": "notepad"}))
-    print(result)
+    router = Router(llm_client=GeminiClient())
+
+    command = router.decide("ábreme el bloc de notas")
+    print("Prueba 1 (debería dar open_app):", command)
+
+    command = router.decide("qué tiempo hace hoy")
+    print("Prueba 2 (debería dar None):", command)
