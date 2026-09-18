@@ -7,9 +7,11 @@ del asistente ni se importa desde ningún otro sitio.
 from brain.router import Router
 from integrations.llm_client import GeminiClient
 from actions.registry import execute_command
+from audio.text_to_speech import EdgeTTSSpeaker
 
 if __name__ == "__main__":
     router = Router(llm_client=GeminiClient())
+    speaker = EdgeTTSSpeaker()
 
     command = router.decide("ábreme el bloc de notas")
     print("Command decidido:", command)
@@ -17,5 +19,6 @@ if __name__ == "__main__":
     if command is not None:
         result = execute_command(command)
         print("Resultado de ejecutarlo:", result)
+        speaker.speak(result.spoken_response)
     else:
         print("El router no encontró ninguna acción para esa frase.")
