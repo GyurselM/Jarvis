@@ -12,5 +12,7 @@ def test_record_audio_calls_sounddevice_and_saves_file():
 
     mock_rec.assert_called_once()
     mock_wait.assert_called_once()
-    mock_write.assert_called_once_with("test.wav", "fake_recording_array", 16000)
+    mock_write.assert_called_once_with(
+        "test.wav", "fake_recording_array", 16000, subtype="PCM_16"
+    )
     assert result == "test.wav"
