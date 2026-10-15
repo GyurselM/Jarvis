@@ -9,15 +9,42 @@ def _make_action(**overrides):
     return OpenAppAction(**defaults)
 
 
-def test_open_app_success():
+def test_open_app_uses_system_path_for_system_apps():
     action = _make_action()
     command = Command(action_name="open_app", parameters={"app_name": "notepad"})
+
+    with patch("actions.open_app.shutil.which", return_value="C:\\Windows\\System32\\notepad.exe"), \
+         patch("actions.open_app.subprocess.Popen") as mock_popen:
+        result = action.execute(command)
+
+    mock_popen.assert_called_once_with(["C:\\Windows\\System32\\notepad.exe"])
+    assert result.success is True
+
+
+def test_open_app_reports_failure_when_app_not_found():
+    action = _make_action()
+    command = Command(action_name="open_app", parameters={"app_name": "a"})
+
+    with patch("actions.open_app.shutil.which", return_value=None), \
+         patch("actions.open_app.subprocess.Popen") as mock_popen:
+        result = action.execute(command)
+
+    mock_popen.assert_not_called()
+    assert result.success is False
+
+
+def test_open_app_rejects_names_with_path_characters():
+    action = _make_action()
+    command = Command(
+        action_name="open_app",
+        parameters={"app_name": "C:\\Windows\\System32\\cmd.exe"},
+    )
 
     with patch("actions.open_app.subprocess.Popen") as mock_popen:
         result = action.execute(command)
 
-    mock_popen.assert_called_once()
-    assert result.success is True
+    mock_popen.assert_not_called()
+    assert result.success is False
 
 
 def test_open_app_missing_name():

@@ -1,10 +1,11 @@
 """
 Acción que abre una aplicación o juego instalado, buscándolo
 automáticamente en varias fuentes, de la más rápida/fiable a la más
-exhaustiva.
+exhaustiva. Nunca pasa texto al shell: solo ejecuta rutas encontradas.
 """
 
 import ctypes
+import shutil
 import subprocess
 
 from actions.base import Action
@@ -14,6 +15,7 @@ from actions.deep_scan_finder import build_deep_scan_index
 from core.command import Command, CommandResult
 
 ERROR_ELEVATION_REQUIRED = 740
+PATH_CHARACTERS = ("\\", "/", ":")
 
 
 def _launch_executable(path: str) -> None:
@@ -38,7 +40,8 @@ class OpenAppAction(Action):
     1. Índice de juegos de Steam (por App ID, vía protocolo steam://).
     2. Índice automático del Menú Inicio.
     3. Escaneo profundo multi-unidad.
-    4. Comando directo de Windows, como último recurso.
+    4. Programas del sistema que están en el PATH de Windows (notepad, calc...).
+    Si no aparece en ninguna parte, devuelve un error controlado.
     """
 
     def __init__(
@@ -62,6 +65,12 @@ class OpenAppAction(Action):
                 spoken_response="No me has dicho qué aplicación abrir."
             )
 
+        if any(character in app_name for character in PATH_CHARACTERS):
+            return CommandResult(
+                success=False,
+                spoken_response="Solo puedo abrir aplicaciones por su nombre."
+            )
+
         try:
             steam_appid = find_app_path(app_name, self._steam_index)
             if steam_appid:
@@ -78,8 +87,15 @@ class OpenAppAction(Action):
                 _launch_executable(deep_path)
                 return CommandResult(success=True, spoken_response=f"Abriendo {app_name}.")
 
-            subprocess.Popen(f"start {app_name}", shell=True)
-            return CommandResult(success=True, spoken_response=f"Abriendo {app_name}.")
+            system_path = shutil.which(app_name)
+            if system_path:
+                _launch_executable(system_path)
+                return CommandResult(success=True, spoken_response=f"Abriendo {app_name}.")
+
+            return CommandResult(
+                success=False,
+                spoken_response=f"No encuentro ninguna aplicación llamada {app_name}."
+            )
 
         except Exception as error:
             return CommandResult(

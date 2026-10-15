@@ -5,7 +5,7 @@ te devuelvo qué función decidió llamar el modelo, si alguna".
 """
 
 from google import genai
-from config import GEMINI_API_KEY
+from config import GEMINI_API_KEY, ROUTER_MODEL
 
 
 class LLMClient:
@@ -23,7 +23,7 @@ class GeminiClient(LLMClient):
 
     def get_function_call(self, prompt: str, tools: list[dict]) -> dict | None:
         interaction = self._client.interactions.create(
-            model="gemini-flash-latest",
+            model=ROUTER_MODEL,
             input=prompt,
             tools=tools,
         )
