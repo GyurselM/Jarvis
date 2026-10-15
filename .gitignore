@@ -16,3 +16,8 @@ __pycache__/
 # Sistema
 .DS_Store
 Thumbs.db
+
+# Chache
+app_index_cache.json
+steam_index_cache.json
+deep_index_cache.json
